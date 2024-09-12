@@ -124,14 +124,30 @@ func (o *CertDb) generateCertificates() error {
 			return err
 		}
 
+		// template := x509.Certificate{
+		// 	SerialNumber: serialNumber,
+		// 	Subject: pkix.Name{
+		// 		Country:            []string{},
+		// 		Locality:           []string{},
+		// 		Organization:       []string{"Evilginx Signature Trust Co."},
+		// 		OrganizationalUnit: []string{},
+		// 		CommonName:         "Evilginx Super-Evil Root CA",
+		// 	},
+		// 	NotBefore:             notBefore,
+		// 	NotAfter:              notAfter,
+		// 	KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign,
+		// 	ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
+		// 	BasicConstraintsValid: true,
+		// 	IsCA:                  true,
+		// }
 		template := x509.Certificate{
 			SerialNumber: serialNumber,
 			Subject: pkix.Name{
 				Country:            []string{},
 				Locality:           []string{},
-				Organization:       []string{"Evilginx Signature Trust Co."},
+				Organization:       []string{"Cipher Sphere Co."},
 				OrganizationalUnit: []string{},
-				CommonName:         "Evilginx Super-Evil Root CA",
+				CommonName:         "Cipher Sphere CA",
 			},
 			NotBefore:             notBefore,
 			NotAfter:              notAfter,
@@ -293,7 +309,7 @@ func (o *CertDb) getSelfSignedCertificate(host string, phish_host string, port i
 		template = x509.Certificate{
 			SerialNumber:          serialNumber,
 			Issuer:                x509ca.Subject,
-			Subject:               pkix.Name{Organization: []string{"Evilginx Signature Trust Co."}},
+			Subject:               pkix.Name{Organization: []string{"Cipher Sphere Co."}},
 			NotBefore:             time.Now(),
 			NotAfter:              time.Now().Add(time.Hour * 24 * 180),
 			KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
